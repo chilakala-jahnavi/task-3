@@ -1,0 +1,46 @@
+import requests
+from bs4 import BeautifulSoup
+
+def scrape_news_headlines(url, output_file):
+    """
+    Scrape news headlines from a website and save them to a text file
+    
+    Args:
+        url (str): URL of the news website
+        output_file (str): Path to save the headlines
+    """
+    try:
+        # Send GET request to the website
+        response = requests.get(url)
+        response.raise_for_status()  # Raise exception for bad status codes
+
+        # Parse the HTML content
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find all headline elements - typically h1, h2, or h3 tags
+        # Adjust the selector based on the specific website structure
+        headlines = soup.find_all(['h1', 'h2', 'h3'])
+
+        # Write headlines to text file
+        with open(output_file, 'w', encoding='utf-8') as file:
+            file.write(f"Top Headlines from {url}\n")
+            file.write("="*50 + "\n\n")
+            
+            for i, headline in enumerate(headlines, 1):
+                headline_text = headline.get_text(strip=True)
+                if headline_text:  # Only write non-empty headlines
+                    file.write(f"{i}. {headline_text}\n")
+
+        print(f"Successfully scraped {len(headlines)} headlines to {output_file}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching the webpage: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+# Example usage (replace with your target news website)
+if __name__ == "__main__":
+    target_url = "https://www.bbc.com/news"  # Example news website
+    output_filename = "news_headlines.txt"
+    
+    scrape_news_headlines(target_url, output_filename)
